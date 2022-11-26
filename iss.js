@@ -12,6 +12,7 @@ const fetchMyIP = function(callback) {
   const url = 'https://api.ipify.org?format=json';
 
   request(url, (error, response, body) => {
+    // console.log(body)
     if (error) {
       callback(error, null);
       return;
@@ -25,10 +26,42 @@ const fetchMyIP = function(callback) {
     console.log("error:", error);
     console.log('StatusCode:', response && response.statusCode);
 
-    const parsedIP = JSON.parse(body).ip; //why parse(body) and then .ip? and not parse(body.ip)??
-    callback(null, parsedIP)
+    const obj = JSON.parse(body);
+    callback(null, obj.ip);
     
   });
 };
-  
-module.exports = { fetchMyIP };
+
+const fetchCoordsByIp = function(ip, callback) {
+  const url = 'http://ipwho.is/38.34.61.232';
+
+  request(url, (error, response, body) => {
+    // console.log(body)
+    if (error) {
+      callback(error, null);
+      return;
+    }
+    const parsedObj = JSON.parse(body);
+
+    if (!parsedObj.success) {
+      const msg = 'Success status was ' + parsedObj.success + '. ' + ' Server message says: ' + parsedObj.message + ' when fetching for IP ' + parsedObj.ip;
+      callback(Error(msg), null);
+      return;
+    }
+
+    console.log("error:", error);
+    console.log('StatusCode:', response && response.statusCode);
+
+    
+    const latitude = parsedObj.latitude;
+    const longitude = parsedObj.longitude;
+    const coordinates = {latitude, longitude};
+    
+    // console.log(coordinates)
+    
+    callback(null, coordinates);
+    
+  });
+};
+
+module.exports = { fetchMyIP, fetchCoordsByIp};
