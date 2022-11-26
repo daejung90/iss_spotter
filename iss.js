@@ -23,8 +23,8 @@ const fetchMyIP = function(callback) {
       return;
     }
 
-    console.log("error:", error);
-    console.log('StatusCode:', response && response.statusCode);
+    // console.log("error:", error);
+    // console.log('StatusCode:', response && response.statusCode);
 
     const obj = JSON.parse(body);
     callback(null, obj.ip);
@@ -33,7 +33,7 @@ const fetchMyIP = function(callback) {
 };
 
 const fetchCoordsByIp = function(ip, callback) {
-  const url = 'http://ipwho.is/38.34.61.232';
+  const url = 'http://ipwho.is/' + ip;
 
   request(url, (error, response, body) => {
     // console.log(body)
@@ -49,8 +49,8 @@ const fetchCoordsByIp = function(ip, callback) {
       return;
     }
 
-    console.log("error:", error);
-    console.log('StatusCode:', response && response.statusCode);
+    // console.log("error:", error);
+    // console.log('StatusCode:', response && response.statusCode);
 
     
     const latitude = parsedObj.latitude;
@@ -64,4 +64,37 @@ const fetchCoordsByIp = function(ip, callback) {
   });
 };
 
-module.exports = { fetchMyIP, fetchCoordsByIp};
+/**
+ * Makes a single API request to retrieve upcoming ISS fly over times the for the given lat/lng coordinates.
+ * Input:
+ *   - An object with keys `latitude` and `longitude`
+ *   - A callback (to pass back an error or the array of resulting data)
+ * Returns (via Callback):
+ *   - An error, if any (nullable)
+ *   - The fly over times as an array of objects (null if error). Example:
+ *     [ { risetime: 134564234, duration: 600 }, ... ]
+ */
+const fetchISSFlyOverTimes = function(coords, callback) {
+  const latitude = coords.latitude;
+  const longitude = coords.longitude;
+  const url = ('https://iss-flyover.herokuapp.com/json/?lat=' + latitude + '&lon=' + longitude);
+  request(url, (error, response, body) => {
+    if (error) {
+      callback(error, null);
+      return;
+    }
+    if (response.statusCode !== 200) {
+      const msg = `Status Code ${response.statusCode} when fetching ISS passing time. Response: ${body}`;
+      callback(Error(msg), null);
+      return;
+    }
+    // console.log("error:", error);
+    // console.log('StatusCode:', response && response.statusCode);
+
+    const timePassing = JSON.parse(body);
+    callback(null, timePassing.response);
+
+  });
+};
+
+module.exports = { fetchMyIP, fetchCoordsByIp, fetchISSFlyOverTimes };
